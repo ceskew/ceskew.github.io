@@ -1,0 +1,40 @@
+/* Glasslight — levels. Angles in degrees. lock: 'all' = bolted down, 'pos' = pinned (rotate only). */
+(function (G) {
+  'use strict';
+  G.LEVELS = [
+    { name: 'First Light', hint: 'Drag the mirror into the beam. Turn it with the handle, the scroll wheel, or Q / E.',
+      src: [[140, 540, 0]], walls: [], sens: [[1090, 190, 'w']],
+      pcs: [{ t: 'mirror', x: 560, y: 760, a: 15 }], sol: [[760, 540, -23.35]] },
+    { name: 'Periscope', hint: 'Light travels in straight lines. Walls do not negotiate.',
+      src: [[140, 230, 0]], walls: [[-60, 480, 1180, 480]], sens: [[260, 720, 'w']],
+      pcs: [{ t: 'mirror', x: 640, y: 350, a: 10 }, { t: 'mirror', x: 900, y: 650, a: -30 }], sol: [[1380, 230, 45], [1380, 720, 135]] },
+    { name: 'Experimentum Crucis', hint: 'This sensor wants red, and only red. White light is every colour at once — glass can pull it apart.',
+      src: [[140, 330, 0]], walls: [], sens: [[1200, 730, 'r']],
+      pcs: [{ t: 'prism', x: 470, y: 660, a: 0 }] },
+    { name: 'Half-Silvered', hint: 'A half-silvered mirror passes half the light and reflects the rest. Coloured glass passes only its own colour.',
+      src: [[140, 580, 0]], walls: [], sens: [[1330, 580, 'r'], [760, 170, 'b']],
+      pcs: [{ t: 'split', x: 380, y: 790, a: 0 }, { t: 'filter', band: 'r', x: 560, y: 790, a: 90 }, { t: 'filter', band: 'b', x: 700, y: 790, a: 90 }], sol: [[760, 580, -45], [1050, 580, 90], [760, 380, 0]] },
+    { name: 'No Mirrors', hint: 'Light that tries to leave glass at too shallow an angle cannot get out at all.',
+      src: [[140, 690, 0]], walls: [[430, 100, 430, 610]], sens: [[570, 200, 'w']],
+      pcs: [{ t: 'prism', x: 1100, y: 330, a: 20 }] },
+    { name: 'Triad', hint: 'One prism. Three colours. Find the angle where the spectrum opens across all of them.',
+      src: [[140, 240, 0]], walls: [], sens: [[1129, 697, 'r'], [1092, 743, 'g'], [1041, 796, 'b']],
+      pcs: [{ t: 'prism', x: 300, y: 700, a: 40 }], sol: [[520, 262, 195]] },
+    { name: 'Yellow', hint: 'Yellow here means red and green together, with no blue. A rainbow is narrow close to its source.',
+      src: [[140, 300, 0]], walls: [], sens: [[980, 640, 'y']],
+      pcs: [{ t: 'prism', x: 360, y: 690, a: 0 }] },
+    { name: 'Magenta Is Not in the Rainbow', hint: 'No single wavelength is magenta. You will have to assemble it: red and blue, no green.',
+      src: [[140, 660, 0]], walls: [], sens: [[1340, 660, 'm']],
+      pcs: [{ t: 'split', x: 300, y: 200, a: 0 }, { t: 'mirror', x: 500, y: 200, a: 0 }, { t: 'filter', band: 'r', x: 680, y: 200, a: 90 }, { t: 'filter', band: 'b', x: 800, y: 200, a: 90 }], sol: [[700, 660, -45], [700, 300, -30.32], [1000, 660, 90], [1020, 480, 119.36]] },
+    { name: 'Monochromator', hint: 'A slit only admits what is aimed straight at it. Sweep the spectrum across the gap.',
+      src: [[140, 230, 0]], walls: [[1190, 600, 1450, 600], [1190, 770, 1450, 770], [1450, 600, 1450, 770], [1190, 600, 1190, 660], [1190, 710, 1190, 770]],
+      sens: [[1370, 685, 'g']],
+      pcs: [{ t: 'prism', x: 300, y: 700, a: 0 }, { t: 'mirror', x: 520, y: 740, a: 0 }] },
+    { name: 'Recombination', hint: 'The fixed prism has already scattered the light. A lens can gather a fan of rays back to a point.',
+      src: [[140, 150, 0]], walls: [], sens: [[1036, 773, 'w']],
+      pcs: [{ t: 'prism', x: 330, y: 172, a: 195, lock: 'all' }, { t: 'lens', x: 300, y: 720, a: 0 }] },
+    { name: 'Spectrograph', hint: 'Everything at once. The straight path is rarely the one you need.',
+      src: [[140, 190, 0]], walls: [], sens: [[1400, 330, 'r'], [1128, 780, 'g'], [520, 800, 'b']],
+      pcs: [{ t: 'prism', x: 300, y: 760, a: 0 }, { t: 'mirror', x: 480, y: 760, a: 0 }, { t: 'mirror', x: 660, y: 760, a: 0 }], sol: [[460, 212, 195], [975.9, 759.4, 288.77], [1005.6, 588.1, 182.3]] }
+  ];
+})(typeof window !== 'undefined' ? window : globalThis);

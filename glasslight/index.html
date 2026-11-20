@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<title>Glasslight</title>
+<meta name="description" content="An optical-bench puzzle game. Bend, split and recombine real spectral light with mirrors, prisms and lenses.">
+<meta name="theme-color" content="#04060c">
+<style>
+  :root { color-scheme: dark; --ink: #e8edf7; --dim: #8c98b3; --line: rgba(150,175,225,.22); --serif: "Iowan Old Style", "Palatino Linotype", Palatino, "Book Antiqua", Georgia, serif; --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; overflow: hidden; background: #04060c; color: var(--ink); font: 14px/1.45 var(--sans); -webkit-user-select: none; user-select: none; -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; display: block; touch-action: none; }
+  #hud { position: fixed; inset: 0; pointer-events: none; padding: max(14px, env(safe-area-inset-top)) max(18px, env(safe-area-inset-right)) 14px max(18px, env(safe-area-inset-left)); display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; }
+  #info { max-width: min(560px, 58vw); text-shadow: 0 1px 12px #04060c, 0 0 3px #04060c; }
+  #num { font-size: 11px; letter-spacing: .22em; color: var(--dim); text-transform: uppercase; }
+  #name { font: italic 26px/1.15 var(--serif); margin: 2px 0 6px; letter-spacing: .01em; }
+  #hint { color: #b4bfd6; font-size: 13.5px; text-wrap: pretty; }
+  #btns { display: flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; pointer-events: auto; }
+  button { font: 600 11px/1 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: var(--ink); background: rgba(10,14,26,.72); border: 1px solid var(--line); border-radius: 999px; padding: 10px 14px; cursor: pointer; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); transition: border-color .15s, background .15s, color .15s; }
+  button:hover { border-color: rgba(190,210,255,.6); background: rgba(22,30,52,.85); }
+  button:focus-visible { outline: 2px solid #9ec1ff; outline-offset: 2px; }
+  button.on { color: #04060c; background: #dfe8fb; border-color: #dfe8fb; }
+  #tray { position: fixed; left: 50%; bottom: max(16px, env(safe-area-inset-bottom)); transform: translateX(-50%); display: none; gap: 6px; flex-wrap: wrap; justify-content: center; width: max-content; max-width: calc(100vw - 24px); }
+  #tray.show { display: flex; }
+  #tray .r { color: #ff8a7d; } #tray .g { color: #7df5a4; } #tray .b { color: #86b6ff; }
+  #done { position: fixed; left: 50%; bottom: max(34px, env(safe-area-inset-bottom)); transform: translate(-50%, 24px); opacity: 0; pointer-events: none; transition: opacity .5s, transform .5s; display: flex; align-items: center; gap: 18px; padding: 12px 14px 12px 24px; border-radius: 999px; background: rgba(8,12,22,.82); border: 1px solid var(--line); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); max-width: calc(100vw - 24px); }
+  #done.show { opacity: 1; transform: translate(-50%, 0); pointer-events: auto; }
+  #done span { font: italic 19px var(--serif); white-space: nowrap; }
+  #done button { background: #dfe8fb; color: #04060c; border-color: #dfe8fb; }
+  .veil { position: fixed; inset: 0; display: none; place-items: center; background: radial-gradient(ellipse at 50% 40%, rgba(8,12,24,.55), rgba(3,4,9,.93)); padding: 24px; overflow: auto; z-index: 5; }
+  .veil.show { display: grid; }
+  #title .box { text-align: center; max-width: 620px; }
+  #title h1 { font: italic 400 clamp(54px, 13vw, 124px)/.95 var(--serif); margin: 0; letter-spacing: -.01em; background: linear-gradient(90deg, #7d8cff 0%, #58c8ff 22%, #6dffb0 45%, #fff27a 62%, #ffa25e 80%, #ff5f6d 100%); -webkit-background-clip: text; background-clip: text; color: transparent; padding: 0 .08em .12em; }
+  #title p { color: #b4bfd6; font-size: 15.5px; margin: 14px auto 30px; max-width: 470px; text-wrap: balance; }
+  #title small { display: block; margin-top: 26px; color: var(--dim); font-size: 12px; letter-spacing: .04em; line-height: 1.8; }
+  #begin { font-size: 13px; padding: 15px 34px; background: #dfe8fb; color: #04060c; border-color: #dfe8fb; }
+  kbd { font: 600 10.5px var(--sans); border: 1px solid var(--line); border-radius: 5px; padding: 1px 6px; color: #c5d0e6; }
+  #menu .box { width: min(760px, 100%); }
+  #menu h2 { font: italic 30px var(--serif); margin: 0 0 18px; font-weight: 400; }
+  #grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(164px, 1fr)); gap: 8px; }
+  #grid button { text-align: left; border-radius: 12px; padding: 13px 14px 14px; letter-spacing: 0; text-transform: none; font: 13px/1.3 var(--sans); min-height: 74px; display: flex; flex-direction: column; justify-content: space-between; gap: 8px; }
+  #grid button i { font-style: normal; font-size: 11px; letter-spacing: .18em; color: var(--dim); display: flex; justify-content: space-between; }
+  #grid button b { font: italic 16px/1.15 var(--serif); font-weight: 400; }
+  #grid button.cur { border-color: #dfe8fb; }
+  #grid button .ok { color: #7df5a4; }
+  #menu .row { margin-top: 18px; display: flex; gap: 8px; justify-content: space-between; flex-wrap: wrap; }
+  #nogl { position: fixed; inset: 0; display: none; place-items: center; text-align: center; padding: 30px; color: #b4bfd6; z-index: 9; background: #04060c; }
+  #turn { position: fixed; left: 0; right: 0; bottom: 124px; text-align: center; color: var(--dim); font-size: 12px; letter-spacing: .08em; display: none; pointer-events: none; }
+  @media (orientation: portrait) and (max-width: 700px) { #turn { display: block; } #name { font-size: 21px; } #hint { font-size: 12.5px; } button { padding: 9px 11px; } }
+  @media (max-height: 520px) { #name { font-size: 20px; margin-bottom: 3px; } #hint { font-size: 12px; } }
+</style>
+</head>
+<body>
+<canvas id="gl"></canvas>
+<canvas id="ui" aria-label="Optical bench. Drag pieces to move them, drag a piece's handle to rotate it."></canvas>
+
+<div id="hud">
+  <div id="info"><div id="num"></div><div id="name"></div><div id="hint"></div></div>
+  <div id="btns">
+    <button id="bLevels">Experiments</button>
+    <button id="bReset" title="Reset this bench (R)">Reset</button>
+    <button id="bReveal" title="Show one solution">Reveal</button>
+    <button id="bSand">Sandbox</button>
+    <button id="bSound" aria-pressed="true">Sound</button>
+  </div>
+</div>
+<div id="turn">Turn your device sideways for a wider bench</div>
+
+<div id="tray">
+  <button data-add="source">+ Emitter</button><button data-add="mirror">+ Mirror</button><button data-add="prism">+ Prism</button>
+  <button data-add="lens">+ Lens</button><button data-add="ball">+ Sphere</button><button data-add="split">+ Half-mirror</button>
+  <button data-add="filter" data-band="r" class="r">+ Red glass</button><button data-add="filter" data-band="g" class="g">+ Green glass</button><button data-add="filter" data-band="b" class="b">+ Blue glass</button>
+  <button id="bDel">Remove</button>
+</div>
+
+<div id="done"><span id="doneMsg">Aligned.</span><button id="bNext">Next</button></div>
+
+<div id="menu" class="veil"><div class="box">
+  <h2>Experiments</h2>
+  <div id="grid"></div>
+  <div class="row"><button id="bMenuSand">Open the sandbox</button><button id="bClose">Close</button></div>
+</div></div>
+
+<div id="title" class="veil show"><div class="box">
+  <h1>Glasslight</h1>
+  <p>An optical bench in the dark. Bend white light, pull it apart into its colours, and put it back together.</p>
+  <button id="begin">Begin</button>
+  <small>Drag a piece to move it · drag its handle to turn it<br><kbd>Q</kbd> <kbd>E</kbd> or scroll to rotate · hold <kbd>Shift</kbd> for fine control · <kbd>R</kbd> reset</small>
+</div></div>
+
+<div id="nogl"><div><h2 style="font:italic 30px var(--serif)">Glasslight needs WebGL 2</h2><p>This browser or device could not start it. A current version of Chrome, Firefox, Safari or Edge will work.</p></div></div>
+
+<script src="optics.js"></script>
+<script src="levels.js"></script>
+<script src="solutions.js"></script>
+<script src="game.js"></script>
+</body>
+</html>
